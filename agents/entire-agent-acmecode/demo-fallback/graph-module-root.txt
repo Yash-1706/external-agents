@@ -1,0 +1,9 @@
+﻿Index: cache-miss (9415ms) | Query: 10ms | Total: 9426ms
+Impact: AgentEvent.Validate (internal/continuity/model/event.go:236) def=236 span=236-256 [method in AgentEvent]
+Blast radius: 14 callers (4 direct, 10 transitive), 2 callees, 1 type consumer, 0 data flows, 0 co-change files, 14 siblings.
+Callers (4 direct, 10 transitive; who breaks if behavior changes):
+- selectEvents (internal/continuity/derive/derive.go:243, def :234)
+- TestAgentEventValidate (internal/continuity/model/model_test.go:172, def :167) [+2 more call sites]
+- finalize (internal/continuity/normalize/normalize.go:234, def :219)
+- FS.AppendEvent (internal/continuity/store/events.go:37, def :30)
+- State (internal/continuity/derive/derive.go:124, def :97) [via selectEvents]

@@ -1,0 +1,6 @@
+﻿Index: cache-miss (16780ms) | Query: 7ms | Total: 16787ms
+Impact: AgentEvent.Validate (agents/entire-agent-acmecode/internal/continuity/model/event.go:236) def=236 span=236-256 [method in AgentEvent]
+Blast radius: 1 caller (1 direct, 0 transitive), 2 callees, 1 type consumer, 0 data flows, 0 co-change files, 14 siblings.
+Callers (1 direct, 0 transitive; who breaks if behavior changes):
+- TestAgentEventValidate (agents/entire-agent-acmecode/internal/continuity/model/model_test.go:172, def :167) [+2 more call sites]
+Callees (2; what it depends on):
