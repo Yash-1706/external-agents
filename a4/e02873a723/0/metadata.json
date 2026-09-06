@@ -1,0 +1,105 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "a4e02873a723",
+  "session_id": "ba2ab14a-0904-42b2-8ec1-d3445211c6e5",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-06T08:54:47.5077685Z",
+  "branch": "buildathon/entire-continuity",
+  "checkpoints_count": 3,
+  "save_step_count": 3,
+  "files_touched": [
+    "docs/GRAPH.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "06d9db6d9f4a",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 42,
+    "cache_creation_tokens": 81991,
+    "cache_read_tokens": 2350370,
+    "output_tokens": 8796,
+    "api_call_count": 21
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-06T08:54:47.3724369Z",
+    "agent_lines": 63,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 63,
+    "total_lines_changed": 63,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 503,
+      "user_lines_removed": 503,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "agents/entire-agent-amp/scripts/verify-amp.sh": 118,
+        "agents/entire-agent-goose/scripts/verify-goose.sh": 146,
+        "agents/entire-agent-kilo/scripts/verify-kilo.sh": 18,
+        "mise-tasks/build": 85,
+        "mise-tasks/lint/_default": 24,
+        "mise-tasks/lint/licenses": 39,
+        "mise-tasks/test": 73
+      },
+      "user_removed_per_file": {
+        "agents/entire-agent-amp/scripts/verify-amp.sh": 118,
+        "agents/entire-agent-goose/scripts/verify-goose.sh": 146,
+        "agents/entire-agent-kilo/scripts/verify-kilo.sh": 18,
+        "mise-tasks/build": 85,
+        "mise-tasks/lint/_default": 24,
+        "mise-tasks/lint/licenses": 39,
+        "mise-tasks/test": 73
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 503,
+      "user_lines_removed": 503,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "agents/entire-agent-amp/scripts/verify-amp.sh": 118,
+        "agents/entire-agent-goose/scripts/verify-goose.sh": 146,
+        "agents/entire-agent-kilo/scripts/verify-kilo.sh": 18,
+        "mise-tasks/build": 85,
+        "mise-tasks/lint/_default": 24,
+        "mise-tasks/lint/licenses": 39,
+        "mise-tasks/test": 73
+      },
+      "user_removed_per_file": {
+        "agents/entire-agent-amp/scripts/verify-amp.sh": 118,
+        "agents/entire-agent-goose/scripts/verify-goose.sh": 146,
+        "agents/entire-agent-kilo/scripts/verify-kilo.sh": 18,
+        "mise-tasks/build": 85,
+        "mise-tasks/lint/_default": 24,
+        "mise-tasks/lint/licenses": 39,
+        "mise-tasks/test": 73
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 503,
+      "agent_lines_removed": 503
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 566,
+      "agent_lines_removed": 503
+    }
+  ]
+}

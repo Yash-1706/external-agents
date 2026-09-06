@@ -1,0 +1,9 @@
+read BUILDATHON.md and docs/, then verify the build and commit
+
+---
+
+run the graph impact command on Validate
+
+---
+
+document this as a Graph limitation in GRAPH.md
