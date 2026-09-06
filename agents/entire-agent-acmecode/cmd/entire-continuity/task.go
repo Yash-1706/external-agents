@@ -26,6 +26,8 @@ const taskUsage = `entire-continuity task <subcommand>
   resume      Rebuild the continuation context for a fresh worker
   lineage     Show the cross-agent lineage of a task
   explain     Explain why the task is where it is, with evidence
+  decide      Record an engineering decision and the reason behind it
+  reject      Record an approach that was tried and abandoned, so nobody retries it
   constraint  Record a new mid-task constraint without losing original intent
 `
 
@@ -49,6 +51,10 @@ func (a *app) task(ctx context.Context, args []string) error {
 		return a.taskLineage(ctx, args[1:])
 	case "explain":
 		return a.taskExplain(ctx, args[1:])
+	case "decide":
+		return a.taskDecide(ctx, args[1:])
+	case "reject":
+		return a.taskReject(ctx, args[1:])
 	case "constraint":
 		return a.taskConstraint(ctx, args[1:])
 	default:
