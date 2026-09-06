@@ -230,16 +230,34 @@ It was wrong three ways at once, and the real fixture broke it harder than the c
 
 ## Checkpoint links and what each checkpoint proves
 
-| Checkpoint | Commit | What it proves |
+The four required milestones, and the commit that carries each. Development ran in a standalone
+repository (`Yash-1706/btw-hack`) before the work was relocated into this Entire mirror clone, so
+the milestone commits below are git-timestamped in that history and land here as the squashed
+`a7a82fa`:
+
+| Milestone | Commit | What it proves |
 |---|---|---|
 | **CP1** — Initial understanding and intended architecture | `ebc1da4` | The domain contract frozen before any implementation: evidence model, normalized events, task identity, port interfaces |
 | **CP2** — Last stable state before the Noon Curveball | `e04266c` | A complete, working v1: engine, CLI, resume and handoff. The state the curveball revision had to preserve |
-| **CP2.5** — Graph impact analysis, before editing | `2a6250b` | Graph run *before* the change, with the finding that chose the design |
+| **CP2.5** — Graph impact analysis, before editing | `2a6250b` | Impact analysis run *before* the change, with the finding that chose the design |
 | **CP3** — Response to the Noon Curveball | `3f2ffa6` | Both formats supported, unknown events retained, partial transcripts recovered, existing behaviour pinned |
-| **CP4** — Final implementation and verification | see `git log` | Adapters, demo, and final verification |
+| **CP4** — Relocation, real Graph, and the finding it produced | `a7a82fa`, `a58128b`, `dadb65d` | The agent in the designated fork; Entire Graph's closed-set finding, the live defect it exposed, and the test that pins it |
 
-Run `entire-continuity checkpoint list` to see the checkpoints the tool itself recorded, and
-`entire-continuity task lineage` for the cross-agent tree.
+**On Entire Checkpoints specifically, stated plainly.** Entire creates checkpoints by capturing an
+*agent session* through hooks installed in the enabled repository. The engineering work above was
+performed by an agent session running in the standalone repository, before this mirror clone
+existed, so those sessions were not captured here and `entire checkpoint list` shows none for them.
+There is no retroactive checkpoint command, and inventing one would be dishonest.
+
+What *is* verifiable: every milestone is a real, timestamped git commit, and the reasoning at each
+is captured in [docs/CURVEBALL.md](docs/CURVEBALL.md) and [docs/GRAPH.md](docs/GRAPH.md) — including
+the pre-curveball assumption, the Graph run that preceded the edit, and the test that pins the
+preserved behaviour. Agent sessions run in this clone from now on are captured normally.
+
+The product also carries its own checkpoint layer (`entire-continuity checkpoint list`,
+`task lineage`), which records the same milestones with intent, decisions and rejected approaches
+attached — that is the thing being demonstrated, and it works against real Entire through
+`internal/continuity/entire` whenever the binary answers.
 
 ---
 
@@ -283,16 +301,8 @@ downstream and the six tests to run after the change — *before* the edit, not 
 Stated plainly, because a product whose thesis is "never present incomplete context as complete"
 would be a poor advertisement for itself otherwise.
 
-- **Entire was not installed in the development environment.** Checkpoints therefore go to a local
-  fallback store. The `EntireClient` port has a real CLI implementation that shells to
-  `entire checkpoint …`, selected automatically when the binary answers a probe. Every command
-  prints which backend answered, and the fallback explicitly refuses to describe itself as Entire.
-  **Re-running in an environment with the `entire` binary switches the backend with no code
-  change** — that is what the port is for.
-- **Entire Graph was likewise unavailable**, so `graph.Detect` falls back to a real local Go static
-  analyser built on `go/ast`: genuine definition lookup, caller analysis and semantic diff over Go
-  source. The findings in `docs/GRAPH.md` are real analysis of this repository, but they were
-  produced by that analyser rather than by Entire Graph. `graph.NewCLI` targets the real thing.
+- **Entire is installed and this work now lives in the Entire mirror clone** of `Yash-1706/external-agents` (India cluster, `aws-ap-south-1`), with checkpoints enabled and Entire Graph v0.4.0 active. The `EntireClient` port selects the real CLI automatically when the binary answers a probe, and falls back to a local store otherwise; every command prints which backend answered, and the fallback refuses to describe itself as Entire.
+- **Entire Graph findings are from the real Graph** (v0.4.0); see [docs/GRAPH.md](docs/GRAPH.md). The local `go/ast` analyser still ships in `internal/continuity/graph` so the product degrades honestly where Graph is absent, but it is no longer what the evidence rests on — and notably it did *not* find the closed-set defect that Graph did.
 - **OpenClaw and Hermes were not installed.** The hook shims in `adapters/` implement their
   documented surfaces, and `TestAdaptersFeedTheNormalizer` runs the real shims under Node and
   decodes what they actually wrote — but no shim has been driven by a live host process. Wiring
