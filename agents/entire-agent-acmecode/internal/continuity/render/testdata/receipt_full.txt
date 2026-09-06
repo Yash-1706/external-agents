@@ -1,0 +1,33 @@
+HANDOFF CREATED
+───────────────
+
+HANDOFF
+ho-2
+
+TASK
+TASK-4417
+
+FROM
+Hermes (ses-hm-1)
+
+TO
+Human (ses-hu-1)
+
+SOURCE CHECKPOINT
+[OBSERVED] cp-b
+
+STATE HASH
+sha256:2222
+
+OUTSTANDING
+2 requirements not yet complete
+
+CRITICAL FAILURES
+1 failing test
+
+NEXT ACTION
+→ [RECOMMENDED] Make the webhook handler idempotent on provider event
+  id.
+
+CREATED
+2026-01-15T10:48:00Z

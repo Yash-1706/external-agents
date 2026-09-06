@@ -1,0 +1,5 @@
+{"hook":"session_start","ts":"2026-03-02T10:00:00Z","session":{"id":"sess-unknown","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"summary":"Fresh session on the same task"}
+{"hook":"memory_compacted","ts":"2026-03-02T10:00:10Z","session":{"id":"sess-unknown","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"summary":"context window compacted"}
+{"hook":"plan_mode_entered","ts":"2026-03-02T10:00:20Z","session":{"id":"sess-unknown","parent":"","role":"main"},"task":{"id":"task_subscription_pause"}}
+{"hook":"permission_denied","ts":"2026-03-02T10:00:30Z","session":{"id":"sess-unknown","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"summary":"write to /etc denied"}
+{"hook":"session_end","ts":"2026-03-02T10:01:00Z","session":{"id":"sess-unknown","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"summary":"Session closed cleanly"}

@@ -1,0 +1,79 @@
+IMPLEMENT SUBSCRIPTION PAUSE
+────────────────────────────
+Task TASK-4417
+
+ORIGINAL INTENT
+Pause future billing while preserving the current billing cycle.
+
+STATUS
+recorded: active
+derived from evidence: partial
+  The recorded status and the evidence disagree; trust the derived value
+  (plan §17).
+1 / 3 requirements complete
+✓ [OBSERVED] tests: 1 passed, 0 failed, 0 skipped, 0 unknown
+[OBSERVED] repo: acme/billing branch feat/pause @ a1b2c3d4e5f6
+
+COMPLETED
+✓ [OBSERVED] R1 Expose a pause endpoint on the subscription API.
+    source: original prompt
+    evidence: commit a1b2c3d4e5f6
+
+INCOMPLETE
+⚠ [INFERRED] R2 Pause takes effect at the end of the current billing
+  cycle.
+    source: original prompt
+    changed by constraint: C1
+    evidence: file billing/subscription.go:210-244
+✗ [UNKNOWN] R3 A paused subscription must be resumable within 30 days.
+    source: constraint C1
+    evidence: none recorded — this claim is unverified
+
+FAILED
+[OBSERVED] no failing tests or failed attempts recorded
+
+CONSTRAINTS ADDED MID-TASK
+These arrived after the task started. They add to the original intent;
+they do not replace it (plan §41).
+• [INFERRED] C1 Paused subscriptions must auto-resume after 30 days
+  unless cancelled.
+    source: noon curveball
+    affects requirements: R2, R3
+    invalidates assumptions: A pause lasts until the customer resumes
+    it.
+    added: 2026-01-15T12:00:00Z
+    evidence: event ev-constraint-1
+
+FILES
+[OBSERVED] 1 file changed
+M billing/subscription.go +62 -9
+
+NEXT ACTION
+→ [RECOMMENDED] Add the 30-day auto-resume job and a test that proves it
+  fires.
+    why: C1 arrived after the original plan and nothing implements it
+    yet.
+    target: billing.AutoResume
+    priority: 1
+    graph verified: no — blast radius is unconfirmed
+    evidence: event ev-constraint-1
+
+CHECKPOINT
+? [UNKNOWN] no checkpoint recorded for this task
+    A resume cannot be verified against a checkpoint; re-verify from the
+    repository.
+
+LINEAGE SUMMARY
+? [UNKNOWN] no lineage recorded for this task
+    Nothing establishes who worked on it or what a resume would start
+    from (plan §48).
+
+STATE HASH
+sha256:931fd38de599d77d2b43219b60663eab
+
+EVIDENCE
+[L1] commit a1b2c3d4e5f6
+[L1] file billing/subscription.go:210-244
+[L1] test TestPauseEndpoint (passed)
+[L3] event ev-constraint-1
+[L3] prompt ses-oc-1

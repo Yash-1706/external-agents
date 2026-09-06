@@ -1,0 +1,13 @@
+LINEAGE
+TASK-4417  Implement subscription pause
+│
+└── OpenClaw
+    └── ses-oc-2  [test]  2026-01-15T09:20:00Z → interrupted
+        └── (no checkpoint)
+
+LINEAGE SUMMARY
+[OBSERVED] agents: OpenClaw
+[OBSERVED] sessions: 1 (1 interrupted — their capture is incomplete)
+? [UNKNOWN] checkpoints: none — a resume cannot be verified against a
+  checkpoint (plan §48)
+[OBSERVED] handoffs: 0

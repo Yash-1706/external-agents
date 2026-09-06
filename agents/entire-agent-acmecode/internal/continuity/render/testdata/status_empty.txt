@@ -1,0 +1,64 @@
+TASK
+(unidentified task) — (untitled task)
+
+INTENT
+? [UNKNOWN] the original intent was not captured
+    Do not infer it from the diff; ask the originating human or agent.
+
+STATUS
+recorded: new
+? [UNKNOWN] no requirements recorded, so completeness cannot be judged
+? [UNKNOWN] test results were not captured; passing cannot be claimed
+? [UNKNOWN] repository state was not captured
+
+STATE PARTIALLY RECOVERED
+Capture was incomplete. Everything below is reported at the confidence
+its evidence supports, and the gaps are named rather than filled in
+(plan §33, §47).
+
+Verified:
+✗ nothing — no capture input was available
+
+Unavailable:
+✗ git repository state
+✗ test results
+✗ entire checkpoints
+✗ agent events
+✗ agent transcript
+✗ entire graph
+✗ semantic extraction
+
+Unknown:
+? [UNKNOWN] nothing beyond the unavailable inputs above was recorded as
+  missing — whatever those inputs would have carried is unknown, not
+  absent
+
+Safe next action:
+→ [RECOMMENDED] Inspect the current repository, and ask for human
+  confirmation before relying on anything above that is not marked
+  OBSERVED.
+
+REQUIREMENTS
+? [UNKNOWN] no requirements recorded
+    Requirements were not extracted, so nothing here says the task is
+    done (plan §33).
+
+FILES
+? [UNKNOWN] changed files were not captured (git state unavailable)
+
+TESTS
+? [UNKNOWN] test results were not captured; passing cannot be claimed
+
+NEXT ACTION
+? [UNKNOWN] no next action was recorded
+    Safe next action: inspect the repository and confirm with a human
+    before continuing (plan §47).
+
+LINEAGE SUMMARY
+? [UNKNOWN] no lineage recorded for this task
+    Nothing establishes who worked on it or what a resume would start
+    from (plan §48).
+
+EVIDENCE
+? [UNKNOWN] no evidence recorded
+    A claim with no evidence cannot be rated above UNKNOWN (plan §11).

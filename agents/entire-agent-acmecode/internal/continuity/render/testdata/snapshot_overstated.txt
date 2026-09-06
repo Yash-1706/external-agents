@@ -1,0 +1,60 @@
+TASK
+TASK-4417 — Implement subscription pause
+
+INTENT
+Pause future billing while preserving the current billing cycle.
+
+STATUS
+recorded: verified
+1 / 1 requirements complete
+[OBSERVED] no test results recorded
+? [UNKNOWN] repository state was not captured
+
+REQUIREMENTS
+1 / 1 complete
+✓ [UNKNOWN] R1 Expose a pause endpoint on the subscription API.
+    recorded as OBSERVED, but the evidence supports no more than
+    UNKNOWN; shown at the weaker rating (plan §12)
+    evidence: none recorded — this claim is unverified
+
+WORK COMPLETED
+✓ [UNKNOWN] Everything the original prompt asked for was implemented and
+  verified.
+    recorded as OBSERVED, but the evidence supports no more than
+    UNKNOWN; shown at the weaker rating (plan §12)
+    evidence: none recorded — this claim is unverified
+
+REJECTED APPROACHES
+✗ [UNKNOWN] RA1 Mutate the renewal status directly on pause.
+    why not: It breaks legacy renewal behaviour.
+    recorded as OBSERVED, but the evidence supports no more than
+    UNKNOWN; shown at the weaker rating (plan §12)
+    evidence: none recorded — this claim is unverified
+
+ASSUMPTIONS
+• [UNKNOWN] Webhook deliveries carry a stable provider event id.
+    recorded as OBSERVED, but the evidence supports no more than
+    UNKNOWN; shown at the weaker rating (plan §12)
+    evidence: none recorded — this claim is unverified
+
+RISKS
+⚠ [UNKNOWN] A replayed webhook can double-apply a pause.
+    severity: high
+    recorded as OBSERVED, but the evidence supports no more than
+    UNKNOWN; shown at the weaker rating (plan §12)
+    evidence: none recorded — this claim is unverified
+
+FILES
+[OBSERVED] no files changed
+
+TESTS
+[OBSERVED] no test results recorded
+
+NEXT ACTION
+? [UNKNOWN] no next action was recorded
+    Safe next action: inspect the repository and confirm with a human
+    before continuing (plan §47).
+
+EVIDENCE
+? [UNKNOWN] no evidence recorded
+    A claim with no evidence cannot be rated above UNKNOWN (plan §11).

@@ -1,0 +1,35 @@
+HANDOFF CREATED
+───────────────
+
+HANDOFF
+(unidentified handoff)
+
+TASK
+TASK-4417
+
+FROM
+(agent not recorded)
+
+TO
+(agent not recorded)
+
+SOURCE CHECKPOINT
+? [UNKNOWN] none — this handoff is not anchored to a checkpoint (plan
+  §48)
+
+STATE HASH
+? [UNKNOWN] not recorded — this receipt cannot prove which state was
+  handed over
+
+OUTSTANDING
+1 requirement not yet complete
+
+CRITICAL FAILURES
+0 failing tests
+
+NEXT ACTION
+? [UNKNOWN] not recorded — inspect the repository and confirm with a
+  human (plan §47)
+
+CREATED
+unknown

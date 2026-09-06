@@ -1,0 +1,3 @@
+EVIDENCE
+? [UNKNOWN] no evidence recorded
+    A claim with no evidence cannot be rated above UNKNOWN (plan §11).

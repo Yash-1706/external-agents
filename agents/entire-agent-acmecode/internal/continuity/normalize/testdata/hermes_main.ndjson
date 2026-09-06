@@ -1,0 +1,6 @@
+{"event":"SessionStart","time":1772442000000,"agent_session":"sess-main","delegated_from":"","agent_role":"main","entire_task":"task_subscription_pause","note":"Resume work on subscription pause","fields":{"repo":"acme/billing","branch":"feature/subscription-pause"}}
+{"event":"PreLLM","time":1772442005000,"agent_session":"sess-main","delegated_from":"","agent_role":"main","entire_task":"task_subscription_pause"}
+{"event":"ToolInvoked","time":1772442009000,"agent_session":"sess-main","delegated_from":"","agent_role":"main","entire_task":"task_subscription_pause","payload_ref":"artifact://runs/42","note":"go test ./billing/... failed: TestPauseResumesBilling","fields":{"tool_name":"run_tests"}}
+{"event":"PostLLM","time":1772442020000,"agent_session":"sess-main","delegated_from":"","agent_role":"main","entire_task":"task_subscription_pause","note":"Proposed a proration fix"}
+{"event":"CheckpointWritten","time":1772442120000,"agent_session":"sess-main","delegated_from":"","agent_role":"main","entire_task":"task_subscription_pause","payload_ref":"ck_pre_noon","note":"Pre-noon stable checkpoint"}
+{"event":"SessionAborted","time":1772442210000,"agent_session":"sess-main","delegated_from":"","agent_role":"main","entire_task":"task_subscription_pause","note":"Operator interrupted the session"}

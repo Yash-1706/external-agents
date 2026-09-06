@@ -1,0 +1,76 @@
+UNTITLED TASK
+─────────────
+Task (unidentified)
+
+ORIGINAL INTENT
+? [UNKNOWN] the original intent was not captured
+    Do not infer it from the diff; ask the originating human or agent.
+
+STATUS
+recorded: new
+? [UNKNOWN] no requirements recorded, so completeness cannot be judged
+? [UNKNOWN] test results were not captured; passing cannot be claimed
+? [UNKNOWN] repository state was not captured
+
+STATE PARTIALLY RECOVERED
+Capture was incomplete. Everything below is reported at the confidence
+its evidence supports, and the gaps are named rather than filled in
+(plan §33, §47).
+
+Verified:
+✗ nothing — no capture input was available
+
+Unavailable:
+✗ git repository state
+✗ test results
+✗ entire checkpoints
+✗ agent events
+✗ agent transcript
+✗ entire graph
+✗ semantic extraction
+
+Unknown:
+? [UNKNOWN] nothing beyond the unavailable inputs above was recorded as
+  missing — whatever those inputs would have carried is unknown, not
+  absent
+
+Safe next action:
+→ [RECOMMENDED] Inspect the current repository, and ask for human
+  confirmation before relying on anything above that is not marked
+  OBSERVED.
+
+COMPLETED
+? [UNKNOWN] nothing is recorded as complete
+
+INCOMPLETE
+? [UNKNOWN] no requirements were recorded, so nothing can be called
+  outstanding
+
+FAILED
+? [UNKNOWN] no failures recorded, but test results were never parsed —
+  absence of failure is not evidence of success
+
+FILES
+? [UNKNOWN] changed files were not captured (git state unavailable)
+
+NEXT ACTION
+? [UNKNOWN] no next action was recorded
+    Safe next action: inspect the repository and confirm with a human
+    before continuing (plan §47).
+
+CHECKPOINT
+? [UNKNOWN] no checkpoint recorded for this task
+    A resume cannot be verified against a checkpoint; re-verify from the
+    repository.
+
+LINEAGE SUMMARY
+? [UNKNOWN] no lineage recorded for this task
+    Nothing establishes who worked on it or what a resume would start
+    from (plan §48).
+
+STATE HASH
+sha256:247b5eb3efd335d08e638a441a06b550
+
+EVIDENCE
+? [UNKNOWN] no evidence recorded
+    A claim with no evidence cannot be rated above UNKNOWN (plan §11).

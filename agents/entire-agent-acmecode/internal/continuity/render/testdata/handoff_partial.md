@@ -1,0 +1,89 @@
+# IMPLEMENT SUBSCRIPTION PAUSE
+
+Task TASK-4417
+
+## ORIGINAL INTENT
+
+- ? **[UNKNOWN]** the original intent was not captured
+  - Do not infer it from the diff; ask the originating human or agent.
+
+## STATUS
+
+- recorded: resumed
+- derived from evidence: partial
+  - The recorded status and the evidence disagree; trust the derived value (plan §17).
+- 1 / 2 requirements complete
+- ? **[UNKNOWN]** test results were not captured; passing cannot be claimed
+- **[OBSERVED]** repo: acme/billing branch feat/pause @ a1b2c3d4e5f6
+
+## STATE PARTIALLY RECOVERED
+
+- Capture was incomplete. Everything below is reported at the confidence its evidence supports, and the gaps are named rather than filled in (plan §33, §47).
+
+**Verified:**
+- ✓ git repository state
+- ✓ agent events
+
+**Unavailable:**
+- ✗ test results
+- ✗ entire checkpoints
+- ✗ agent transcript
+- ✗ entire graph
+- ✗ semantic extraction
+
+**Unknown:**
+- ? **[UNKNOWN]** agent transcript for session ses-oc-2
+- ? **[UNKNOWN]** entire checkpoint history
+- ? **[UNKNOWN]** original decision rationale
+
+**Notes:**
+- Entire was unreachable during capture; checkpoint ids could not be resolved.
+- The OpenClaw adapter did not expose turn-level events for ses-oc-2.
+
+**Safe next action:**
+- → **[RECOMMENDED]** Inspect the current repository, and ask for human confirmation before relying on anything above that is not marked OBSERVED.
+
+## COMPLETED
+
+- ✓ **[OBSERVED]** R1 Expose a pause endpoint on the subscription API.
+  - evidence: commit a1b2c3d4e5f6
+
+## INCOMPLETE
+
+- ? **[UNKNOWN]** R2 Make webhook handling idempotent under replay.
+  - evidence: none recorded — this claim is unverified
+
+## FAILED
+
+- ? **[UNKNOWN]** no failures recorded, but test results were never parsed — absence of failure is not evidence of success
+
+## FILES
+
+- **[OBSERVED]** 2 files changed
+- M billing/subscription.go +62 -9
+- ? billing/webhooks.go
+
+## NEXT ACTION
+
+- ? **[UNKNOWN]** no next action was recorded
+  - Safe next action: inspect the repository and confirm with a human before continuing (plan §47).
+
+## CHECKPOINT
+
+- ? **[UNKNOWN]** no checkpoint recorded for this task
+  - A resume cannot be verified against a checkpoint; re-verify from the repository.
+
+## LINEAGE SUMMARY
+
+- **[OBSERVED]** agents: OpenClaw
+- **[OBSERVED]** sessions: 1 (1 interrupted — their capture is incomplete)
+- ? **[UNKNOWN]** checkpoints: none — a resume cannot be verified against a checkpoint (plan §48)
+- **[OBSERVED]** handoffs: 0
+
+## STATE HASH
+
+sha256:7e711ce463ac44678aec4f10b9ac35df
+
+## EVIDENCE
+
+- [L1] commit a1b2c3d4e5f6

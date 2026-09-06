@@ -1,0 +1,10 @@
+NO ENGINEERING STATE
+────────────────────
+
+STATE UNAVAILABLE
+? [UNKNOWN] No engineering state was supplied, so nothing can be
+  reported about this task.
+    This is a missing input, not evidence that no work was done (plan
+    §48).
+    Safe next action: inspect the repository directly and re-capture the
+    task state.

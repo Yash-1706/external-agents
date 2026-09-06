@@ -1,0 +1,41 @@
+LINEAGE
+TASK-4417  Implement subscription pause
+│
+├── OpenClaw
+│   ├── ses-oc-1  [main]  2026-01-15T09:00:00Z → 2026-01-15T09:45:00Z
+│   │   └── cp-a  "pause state chosen"  @9f8e7d6  2026-01-15T09:25:00Z
+│   └── ses-oc-2  [test]  2026-01-15T09:20:00Z → interrupted
+│       └── (no checkpoint)
+│
+├── Hermes
+│   ├── ses-hm-1  [coding]  2026-01-15T09:50:00Z → 2026-01-15T10:45:00Z
+│   │   └── cp-b  "webhook dedupe wip"  @a1b2c3d  2026-01-15T10:40:00Z
+│   └── cp-c  "adapter lost the session id"  2026-01-15T10:42:00Z  (no session recorded)
+│
+├── Human
+│   └── ses-hu-1  [human]  2026-01-15T10:50:00Z → active
+│       └── (no checkpoint)
+│
+└── (checkpoints not attributable to a recorded session)
+    └── cp-d  2026-01-15T10:44:00Z  (session ses-gone is not in the recorded lineage)
+
+HANDOFFS
+• ho-1 OpenClaw (ses-oc-1) → Hermes (ses-hm-1)
+    source checkpoint: cp-a
+    state hash: sha256:1111
+    outstanding: 3 requirements
+    critical failures: 1
+    created: 2026-01-15T09:48:00Z
+• ho-2 Hermes (ses-hm-1) → Human (ses-hu-1)
+    source checkpoint: cp-b
+    state hash: sha256:2222
+    outstanding: 2 requirements
+    critical failures: 2
+    created: 2026-01-15T10:48:00Z
+
+LINEAGE SUMMARY
+[OBSERVED] agents: OpenClaw → Hermes → Human
+    this task has crossed 3 agent runtimes
+[OBSERVED] sessions: 4 (1 interrupted — their capture is incomplete)
+[OBSERVED] checkpoints: 4 — latest cp-d (2026-01-15T10:44:00Z)
+[OBSERVED] handoffs: 2

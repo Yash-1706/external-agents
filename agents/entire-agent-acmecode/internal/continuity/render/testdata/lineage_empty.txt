@@ -1,0 +1,10 @@
+LINEAGE
+(unidentified task)
+? [UNKNOWN] no sessions or checkpoints are recorded for this task
+    Its lineage cannot be reconstructed; this is a missing input, not
+    evidence that no work happened (plan §48).
+
+LINEAGE SUMMARY
+? [UNKNOWN] no lineage recorded for this task
+    Nothing establishes who worked on it or what a resume would start
+    from (plan §48).

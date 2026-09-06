@@ -1,0 +1,6 @@
+{"hook":"session_start","ts":"2026-03-02T09:00:00Z","session":{"id":"sess-main","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"summary":"Resume work on subscription pause","meta":{"repo":"acme/billing","branch":"feature/subscription-pause"}}
+{"hook":"turn_start","ts":"2026-03-02T09:00:05Z","session":{"id":"sess-main","parent":"","role":"main"},"task":{"id":"task_subscription_pause"}}
+{"hook":"tool_use","ts":"2026-03-02T09:00:09Z","session":{"id":"sess-main","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"tool":{"name":"run_tests","ref":"artifact://runs/42"},"summary":"go test ./billing/... failed: TestPauseResumesBilling"}
+{"hook":"turn_end","ts":"2026-03-02T09:00:20Z","session":{"id":"sess-main","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"summary":"Proposed a proration fix"}
+{"hook":"checkpoint","ts":"2026-03-02T09:02:00Z","session":{"id":"sess-main","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"tool":{"ref":"ck_pre_noon"},"summary":"Pre-noon stable checkpoint","meta":{"checkpoint_id":"ck_pre_noon"}}
+{"hook":"session_interrupt","ts":"2026-03-02T09:03:30Z","session":{"id":"sess-main","parent":"","role":"main"},"task":{"id":"task_subscription_pause"},"summary":"Operator interrupted the session"}
