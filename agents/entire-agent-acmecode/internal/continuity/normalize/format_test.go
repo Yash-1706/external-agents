@@ -486,3 +486,37 @@ func contains(hay []string, needle string) bool {
 	}
 	return false
 }
+
+// TestNewDecoderIsExhaustiveOverFormat pins the closed-set property Entire
+// Graph flagged: every Format variant must have an arm, and the one variant
+// that is valid-but-not-decodable must say so rather than being reported as
+// unknown. A new format added without an arm fails here instead of falling out
+// of the switch at runtime.
+func TestNewDecoderIsExhaustiveOverFormat(t *testing.T) {
+	for _, f := range Formats() {
+		d, err := newDecoder(f)
+		if err != nil {
+			t.Errorf("newDecoder(%q) = error %v, want a decoder", f, err)
+			continue
+		}
+		if d.format() != f {
+			t.Errorf("newDecoder(%q) built a decoder for %q", f, d.format())
+		}
+	}
+
+	// Auto is valid but unresolved; the error must name that, not "unknown".
+	_, err := newDecoder(FormatAuto)
+	if err == nil {
+		t.Fatal("newDecoder(auto) returned a decoder; auto is not a concrete format")
+	}
+	if strings.Contains(err.Error(), "unknown format") {
+		t.Errorf("auto reported as unknown, which is a wrong answer to a valid input: %v", err)
+	}
+	if !strings.Contains(err.Error(), "DetectFormat") {
+		t.Errorf("the error does not say how to resolve auto: %v", err)
+	}
+
+	if _, err := newDecoder(Format("nope/v9")); err == nil {
+		t.Error("an unknown format was accepted")
+	}
+}

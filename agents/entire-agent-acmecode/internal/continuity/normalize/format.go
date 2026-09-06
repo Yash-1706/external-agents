@@ -145,7 +145,16 @@ type decoder interface {
 	mapRecord(index int, rec json.RawMessage, opts Options) (mapped, error)
 }
 
-// newDecoder builds a decoder for a format.
+// newDecoder builds a decoder for a concrete format.
+//
+// The switch is exhaustive over Format on purpose. Entire Graph flagged this as
+// a closed set with 3 of 4 arms and no default: adding a variant would compile
+// and then fall out of the switch at runtime. It also surfaced a live defect —
+// FormatAuto is a *valid* Format, but it reached the fallthrough and was
+// reported as an "unknown format", which is a wrong answer to a caller who
+// passed something legitimate. Auto is not undecodable, it is unresolved: it
+// must be turned into a concrete format by DetectFormat before it gets here,
+// and saying so names the actual mistake.
 func newDecoder(f Format) (decoder, error) {
 	switch f {
 	case FormatOpenClawV1:
@@ -154,8 +163,11 @@ func newDecoder(f Format) (decoder, error) {
 		return legacyDecoder{f: FormatHermesV1, m: hermesNormalizer{}.mapRecord}, nil
 	case FormatLifecycleV2:
 		return newLifecycleV2(), nil
+	case FormatAuto:
+		return nil, fmt.Errorf("normalize: %q must be resolved to a concrete format by DetectFormat before a decoder is built", FormatAuto)
+	default:
+		return nil, fmt.Errorf("normalize: unknown format %q; this build reads %v", f, Formats())
 	}
-	return nil, fmt.Errorf("normalize: unknown format %q; this build reads %v", f, Formats())
 }
 
 // legacyDecoder adapts the stateless per-runtime mappers to the decoder
