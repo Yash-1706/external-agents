@@ -15,6 +15,13 @@
 param([switch]$Warm)
 
 $ErrorActionPreference = 'Continue'
+
+# The state renderer uses ✓ ⛔ ✗ • and em dashes. A console left on the
+# legacy codepage renders those as mojibake, which makes a careful product
+# look broken in the one place a judge is looking.
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 $root    = 'D:\entire\external-agents'
 $agent   = Join-Path $root 'agents\entire-agent-acmecode'
 $store   = '.entire-continuity-real'
