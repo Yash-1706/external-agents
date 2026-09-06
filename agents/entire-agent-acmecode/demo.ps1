@@ -75,6 +75,7 @@ if ($Warm) {
     go build -o entire-agent-acmecode.exe ./cmd/entire-agent-acmecode
 
     Write-Host 'Seeding the task...' -ForegroundColor Cyan
+    Remove-Item -Recurse -Force .entire-continuity -ErrorAction SilentlyContinue
     .\entire-continuity.exe ingest --file $fixture --quiet | Out-Null
 
     $script:G = Resolve-Graph
@@ -117,21 +118,31 @@ Beat '3' 'THE ENGINEERING STATE' 'Intent recovered. Every gap named. Every claim
 .\entire-continuity.exe task status $task
 Next
 
-Beat '4' 'GRAPH, FROM THE REPOSITORY ROOT' 'One caller. And it is a test.'
+Beat '4' 'THE WORKER CHANGES' 'A different runtime picks the task up. Watch the task id.'
+Write-Host '  $ task resume --agent hermes' -ForegroundColor DarkGray
+.\entire-continuity.exe task resume $task --session hermes_cont_01 --agent hermes 2>&1 | Select-Object -First 8
+Write-Host ''
+Write-Host '  $ task handoff --from acmecode --to hermes --record' -ForegroundColor DarkGray
+.\entire-continuity.exe task handoff $task --from-session btw-track3-demo-001 --from-agent acmecode `
+    --to-session hermes_cont_01 --to-agent hermes --record 2>&1 | Out-Null
+.\entire-continuity.exe task lineage $task
+Next
+
+Beat '5' 'GRAPH, FROM THE REPOSITORY ROOT' 'One caller. And it is a test.'
 Graph-Impact $root 'graph-repo-root.txt' 6
 Next
 
-Beat '5' 'GRAPH, FROM THE MODULE ROOT' 'Same symbol. Same command. Only --repo changed.'
+Beat '6' 'GRAPH, FROM THE MODULE ROOT' 'Same symbol. Same command. Only --repo changed.'
 Graph-Impact $agent 'graph-module-root.txt' 9
 Next
 
-Beat '6' 'THE SOURCE CONFIRMS' 'Four production callers, in the three packages the design rested on.'
+Beat '7' 'THE SOURCE CONFIRMS' 'Four production callers, in the three packages the design rested on.'
 Select-String -Path internal\continuity\*\*.go -Pattern '\.Validate\(\)' |
     Where-Object { $_.Path -notlike '*_test.go' } |
     ForEach-Object { '  {0}:{1}' -f (Resolve-Path -Relative $_.Path), $_.LineNumber }
 Next
 
-Beat '7' 'THE CURVEBALL, AND THE TEST THAT PROVES IT' 'Old fixtures decode byte-identically through both paths.'
+Beat '8' 'THE CURVEBALL, AND THE TEST THAT PROVES IT' 'Old fixtures decode byte-identically through both paths.'
 go test ./internal/continuity/normalize/ -run 'TestOriginalFormatsStillDecode|TestUnknownEventsAreRetained|TestIncompleteTranscript' -v 2>&1 |
     Select-String -Pattern '^(--- )?(PASS|ok)'
 
