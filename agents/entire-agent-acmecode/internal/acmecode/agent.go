@@ -14,9 +14,13 @@
 package acmecode
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/entireio/external-agents/agents/entire-agent-acmecode/internal/continuity/model"
 	"github.com/entireio/external-agents/agents/entire-agent-acmecode/internal/continuity/normalize"
@@ -248,4 +252,119 @@ func taskIDFor(path string) string {
 		return "acmecode_session"
 	}
 	return "acmecode_" + base
+}
+
+// ReadSession builds the session record Entire stores for a transcript.
+//
+// The file lists come from the transcript itself rather than from git, because
+// this answers "what did this session do", not "what does the tree look like
+// now" — the two diverge as soon as anything else touches the repository.
+func (a *Agent) ReadSession(input *protocol.HookInputJSON) (protocol.AgentSessionJSON, error) {
+	sessionID := a.GetSessionID(input)
+	if sessionID == "" {
+		return protocol.AgentSessionJSON{}, nil
+	}
+
+	ref := sessionID
+	if input != nil && strings.TrimSpace(input.SessionRef) != "" {
+		ref = strings.TrimSpace(input.SessionRef)
+	}
+	res, err := a.decode(resolvePath(ref))
+	if err != nil {
+		return protocol.AgentSessionJSON{}, err
+	}
+
+	session := protocol.AgentSessionJSON{
+		SessionID:  sessionID,
+		AgentName:  "acmecode",
+		RepoPath:   protocol.RepoRoot(),
+		SessionRef: ref,
+	}
+	if len(res.Events) > 0 {
+		session.StartTime = res.Events[0].Timestamp.UTC().Format(time.RFC3339)
+	}
+
+	seen := map[string]bool{}
+	for _, ev := range res.Events {
+		p := strings.TrimSpace(ev.Attr("path"))
+		if p == "" || ev.Attr("tool_name") != "file_changed" || seen[p] {
+			continue
+		}
+		seen[p] = true
+		// AcmeCode reports a change kind per record; a delete and a create are
+		// not the same event and must not be collapsed into "modified".
+		switch strings.ToLower(strings.TrimSpace(ev.Attr("change"))) {
+		case "deleted", "removed":
+			session.DeletedFiles = append(session.DeletedFiles, p)
+		case "created", "added", "new":
+			session.NewFiles = append(session.NewFiles, p)
+		default:
+			session.ModifiedFiles = append(session.ModifiedFiles, p)
+		}
+	}
+	return session, nil
+}
+
+// WriteSession persists a session record beside its transcript.
+func (a *Agent) WriteSession(session protocol.AgentSessionJSON) error {
+	if strings.TrimSpace(session.SessionID) == "" {
+		return errors.New("acmecode: refusing to write a session with no id")
+	}
+	dir, err := a.GetSessionDir(protocol.RepoRoot())
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	data, err := json.MarshalIndent(session, "", "  ")
+	if err != nil {
+		return err
+	}
+	// Written atomically: a half-written session file would be read back as a
+	// corrupt session rather than an absent one.
+	tmp := filepath.Join(dir, session.SessionID+".session.json.tmp")
+	final := filepath.Join(dir, session.SessionID+".session.json")
+	if err := os.WriteFile(tmp, data, 0o644); err != nil {
+		return err
+	}
+	return os.Rename(tmp, final)
+}
+
+// ChunkTranscript splits a transcript for transport, never mid-record.
+//
+// Splitting on record boundaries rather than raw byte offsets is what makes
+// reassembly lossless: a chunk that ends mid-line would leave the seam
+// unparseable, which is exactly the truncation failure this integration exists
+// to survive. A single record larger than maxSize is emitted whole rather than
+// broken, because an unparseable chunk is worse than an oversized one.
+func (a *Agent) ChunkTranscript(content []byte, maxSize int) ([][]byte, error) {
+	if len(content) == 0 {
+		return nil, nil
+	}
+	if maxSize <= 0 {
+		return [][]byte{content}, nil
+	}
+
+	var chunks [][]byte
+	var cur []byte
+	for _, line := range bytes.SplitAfter(content, []byte("\n")) {
+		if len(line) == 0 {
+			continue
+		}
+		if len(cur) > 0 && len(cur)+len(line) > maxSize {
+			chunks = append(chunks, cur)
+			cur = nil
+		}
+		cur = append(cur, line...)
+	}
+	if len(cur) > 0 {
+		chunks = append(chunks, cur)
+	}
+	return chunks, nil
+}
+
+// ReassembleTranscript joins chunks back into the original bytes.
+func (a *Agent) ReassembleTranscript(chunks [][]byte) ([]byte, error) {
+	return bytes.Join(chunks, nil), nil
 }

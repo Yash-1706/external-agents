@@ -32,8 +32,16 @@ func main() {
 		err = protocol.HandleGetSessionDir(os.Args[2:], os.Stdout, agent)
 	case "resolve-session-file":
 		err = protocol.HandleResolveSessionFile(os.Args[2:], os.Stdout, agent)
+	case "read-session":
+		err = protocol.HandleReadSession(os.Stdin, os.Stdout, agent)
+	case "write-session":
+		err = protocol.HandleWriteSession(os.Stdin, agent)
 	case "read-transcript":
 		err = protocol.HandleReadTranscript(os.Args[2:], os.Stdout, agent)
+	case "chunk-transcript":
+		err = protocol.HandleChunkTranscript(os.Args[2:], os.Stdin, os.Stdout, agent)
+	case "reassemble-transcript":
+		err = protocol.HandleReassembleTranscript(os.Stdin, os.Stdout, agent)
 	case "get-transcript-position":
 		err = protocol.HandleGetTranscriptPosition(os.Args[2:], os.Stdout, agent)
 	case "extract-modified-files":

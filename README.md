@@ -22,6 +22,7 @@ External agents communicate with Entire CLI via subcommands that accept and retu
 | [Grok Build](agents/entire-agent-grok/) | `agents/entire-agent-grok/` | Implemented — hooks + transcript analysis + compact transcripts |
 | [Oh My Pi](agents/entire-agent-omp/) | `agents/entire-agent-omp/` | Implemented — hooks + transcript analysis + compact transcripts |
 | [Kilo](agents/entire-agent-kilo/) | `agents/entire-agent-kilo/` | Implemented (preview) — hooks + transcript analysis + token calculation + compact transcripts |
+| [AcmeCode](agents/entire-agent-acmecode/) | `agents/entire-agent-acmecode/` | Implemented (preview) — transcript analysis across two live transcript formats |
 
 See each agent's own README for setup and usage instructions.
 
@@ -148,6 +149,7 @@ The lifecycle harness auto-discovers and builds all agents in `agents/` via `Tes
 
 ```
 agents/                          # Standalone external agent projects
+  entire-agent-acmecode/         # AcmeCode agent (Go binary) + continuity engine
   entire-agent-kiro/             # Kiro agent (Go binary)
   entire-agent-amp/              # Amp agent (Go binary)
   entire-agent-qwen/             # Qwen Code agent (Go binary)
