@@ -330,13 +330,15 @@ func extractSemantic(
 		Events:        events,
 		Deterministic: current,
 	}
-	// The prompt the task actually started from is the best source of
-	// requirements (plan §13), so it wins over a polished intent line. Both
-	// fallbacks matter: a task created by hand has an intent and no prompt, and
-	// a task ingested from a transcript has a prompt and no typed-in intent.
-	in.OriginalPrompt = derive.OriginalPrompt(events)
-	if strings.TrimSpace(in.OriginalPrompt) == "" && historical != nil {
+	// The most authoritative statement of intent wins: a PRD or spec the task
+	// was created from outranks the opening prompt of any one session, which in
+	// turn outranks an intent a checkpoint happened to record. A task anchored
+	// to a document should have its requirements read from that document.
+	if historical != nil {
 		in.OriginalPrompt = historical.Task.OriginalIntent
+	}
+	if strings.TrimSpace(in.OriginalPrompt) == "" {
+		in.OriginalPrompt = derive.OriginalPrompt(events)
 	}
 	if strings.TrimSpace(in.OriginalPrompt) == "" && current != nil {
 		in.OriginalPrompt = current.Task.OriginalIntent

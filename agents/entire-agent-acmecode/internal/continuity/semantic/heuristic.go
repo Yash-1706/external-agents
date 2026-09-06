@@ -116,6 +116,8 @@ type promptCandidate struct {
 	text string
 	line int
 	form string
+	// id is the label the source gave this requirement, when it gave one.
+	id string
 }
 
 // promptCandidates scans the original prompt in source order. Numbered and
@@ -123,14 +125,35 @@ type promptCandidate struct {
 // that carry an obligation cue, because a narrative sentence is not a
 // requirement and inventing one would be fabrication (plan §32).
 func promptCandidates(prompt string) []promptCandidate {
+	// A document that says where its requirements are is taken at its word.
+	// Scanning the whole of a PRD turns its problem statement, its out-of-scope
+	// list and its acceptance prose into requirements, which is how a five
+	// requirement spec became eleven — including three the document explicitly
+	// placed out of scope.
+	scoped := hasRequirementsSection(prompt)
+	inSection := !scoped
+
 	var out []promptCandidate
 	for i, raw := range strings.Split(prompt, "\n") {
 		line := strings.TrimSpace(strings.TrimSuffix(raw, "\r"))
 		if line == "" {
 			continue
 		}
-		if text, form, ok := stripMarker(line); ok {
-			out = append(out, promptCandidate{text: tidy(text), line: i + 1, form: form})
+		if scoped {
+			switch {
+			case requirementsHeading.MatchString(line):
+				inSection = true
+				continue
+			case anyHeading.MatchString(line):
+				inSection = false
+				continue
+			}
+			if !inSection {
+				continue
+			}
+		}
+		if text, id, form, ok := stripMarker(line); ok {
+			out = append(out, promptCandidate{text: tidy(text), line: i + 1, form: form, id: id})
 			continue
 		}
 		for _, s := range sentences(line) {
@@ -148,6 +171,7 @@ func promptCandidates(prompt string) []promptCandidate {
 func requirements(in model.ExtractionInput, now time.Time) []model.Requirement {
 	cands := promptCandidates(in.OriginalPrompt)
 	out := make([]model.Requirement, 0, len(cands))
+	usedIDs := make(map[string]bool, len(cands))
 	seen := make(map[string]bool, len(cands))
 	for _, c := range cands {
 		key := strings.ToLower(c.text)
@@ -174,7 +198,10 @@ func requirements(in model.ExtractionInput, now time.Time) []model.Requirement {
 		model.SortEvidence(ev)
 
 		out = append(out, model.Requirement{
-			ID:          fmt.Sprintf("R%d", len(out)+1),
+			// The source's own label wins. An identifier exists so the same
+			// requirement can be named in the spec, the ticket and the pull
+			// request; renumbering R3 to R7 severs exactly that.
+			ID:          requirementID(c, usedIDs),
 			Description: c.text,
 			Status:      status,
 			// Confidence flows through the single chokepoint so that a claim

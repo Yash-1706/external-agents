@@ -22,10 +22,17 @@ func testClock() model.Clock { return &model.FixedClock{Current: base, Step: tim
 // intent, a numbered list, a bullet, and a closing paragraph containing one
 // assumption and one sentence that is not an obligation at all.
 //
-// The prompt's own "R1"/"R2" labels deliberately do not line up with the
-// extracted ids. Generated ids are positional (R1..Rn in source order) so that
-// the same prompt yields the same ids everywhere; they are not inherited from
-// whatever the author happened to call their bullets.
+// The prompt mixes labelled and unlabelled obligations on purpose.
+//
+// A label the source gave is now inherited: an identifier exists so the same
+// requirement can be named in the spec, the ticket and the pull request, and a
+// document's "R3" must not become "R7" here. Earlier this package assigned ids
+// positionally and ignored the author's labels, which is defensible for a typed
+// prompt and wrong for a PRD checked into the repository.
+//
+// Unlabelled obligations still take the lowest free positional id, and no two
+// requirements ever share one — the opening prose sentence below is extracted
+// ahead of the "R1 -" line and must not take R1 away from it.
 const fixturePrompt = `Add resumable task state so a second agent can continue this work.
 
 R1 - The extractor must never mark a requirement complete without evidence.

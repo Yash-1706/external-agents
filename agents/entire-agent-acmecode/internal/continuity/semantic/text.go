@@ -1,6 +1,9 @@
 package semantic
 
 import (
+	"fmt"
+
+	"github.com/entireio/external-agents/agents/entire-agent-acmecode/internal/continuity/model"
 	"regexp"
 	"sort"
 	"strings"
@@ -216,8 +219,9 @@ func sentences(line string) []string {
 	return out
 }
 
-// markerNumbered matches "R1 - x", "REQ 2: x", "3. x" and "4) x".
-var markerNumbered = regexp.MustCompile(`^(?i:(?:r|req)\s*)?\d+\s*[-–—.):]\s*(.+)$`)
+// markerNumbered matches "R1 - x", "REQ 2: x", "3. x" and "4) x", capturing the
+// label the source used so it can be preserved.
+var markerNumbered = regexp.MustCompile(`^((?i:(?:r|req)\s*)?)(\d+)\s*[-–—.):]\s*(.+)$`)
 
 // markerBullet matches "- x", "* x" and "• x".
 var markerBullet = regexp.MustCompile(`^[-*•]\s+(.+)$`)
@@ -225,14 +229,44 @@ var markerBullet = regexp.MustCompile(`^[-*•]\s+(.+)$`)
 // stripMarker removes a list marker from a line and reports which form it was.
 // The form is carried onto the evidence record so a reader can see why a line
 // became a requirement, rather than having to trust that it did.
-func stripMarker(line string) (text, form string, ok bool) {
+//
+// When the source labelled the line itself — "R3 — ..." in a PRD — that label
+// is returned and later used verbatim. Renumbering it would break the one thing
+// an identifier is for: a requirement called R3 in the document, the ticket and
+// the pull request must not become R7 here.
+func stripMarker(line string) (text, id, form string, ok bool) {
 	if m := markerNumbered.FindStringSubmatch(line); m != nil {
-		return m[1], "numbered", true
+		// Only an explicitly R-prefixed label is adopted. A bare "3." is
+		// ordinary list numbering and carries no identity of its own.
+		if strings.TrimSpace(m[1]) != "" {
+			return m[3], "R" + m[2], "numbered", true
+		}
+		return m[3], "", "numbered", true
 	}
 	if m := markerBullet.FindStringSubmatch(line); m != nil {
-		return m[1], "bullet", true
+		return m[1], "", "bullet", true
 	}
-	return "", "", false
+	return "", "", "", false
+}
+
+// requirementsHeading matches the heading a spec puts its obligations under.
+var requirementsHeading = regexp.MustCompile(`(?i)^#{1,6}\s*(requirements?|scope|user stories|acceptance criteria)\s*$`)
+
+// anyHeading matches any markdown heading, which ends the section above it.
+var anyHeading = regexp.MustCompile(`^#{1,6}\s+\S`)
+
+// hasRequirementsSection reports whether a document declares where its
+// requirements live. When it does, everything outside that section — the
+// problem statement, the out-of-scope list, the acceptance prose — is context
+// rather than obligation, and reading it as obligation manufactures
+// requirements the team never agreed to.
+func hasRequirementsSection(prompt string) bool {
+	for _, raw := range strings.Split(prompt, "\n") {
+		if requirementsHeading.MatchString(strings.TrimSpace(raw)) {
+			return true
+		}
+	}
+	return false
 }
 
 // tidy trims surrounding space and trailing list punctuation so requirement text
@@ -268,4 +302,28 @@ func symbolFromTest(name string) string {
 		return ""
 	}
 	return n
+}
+
+// requirementID returns the identifier for an extracted requirement.
+//
+// A label the source gave is used verbatim, because an identifier exists so the
+// same requirement can be named in the spec, the ticket and the pull request —
+// and renumbering a document's R3 to R7 severs exactly that.
+//
+// Anything unlabelled gets the lowest free positional id. Two requirements can
+// never share an id: a document may label some lines and not others, and a
+// prose obligation ahead of an "R1 —" line would otherwise take R1 for itself
+// and collide with it.
+func requirementID(c promptCandidate, used map[string]bool) string {
+	if id := model.NormalizeID(c.id); id != "" && !used[id] {
+		used[id] = true
+		return id
+	}
+	for n := 1; ; n++ {
+		id := fmt.Sprintf("R%d", n)
+		if !used[id] {
+			used[id] = true
+			return id
+		}
+	}
 }

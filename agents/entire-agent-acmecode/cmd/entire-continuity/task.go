@@ -26,6 +26,7 @@ const taskUsage = `entire-continuity task <subcommand>
   resume      Rebuild the continuation context for a fresh worker
   lineage     Show the cross-agent lineage of a task
   explain     Explain why the task is where it is, with evidence
+  review      Show what needs a human decision, and why
   decide      Record an engineering decision and the reason behind it
   reject      Record an approach that was tried and abandoned, so nobody retries it
   constraint  Record a new mid-task constraint without losing original intent
@@ -51,6 +52,8 @@ func (a *app) task(ctx context.Context, args []string) error {
 		return a.taskLineage(ctx, args[1:])
 	case "explain":
 		return a.taskExplain(ctx, args[1:])
+	case "review":
+		return a.taskReview(ctx, args[1:])
 	case "decide":
 		return a.taskDecide(ctx, args[1:])
 	case "reject":
@@ -66,6 +69,7 @@ func (a *app) taskInit(ctx context.Context, args []string) error {
 	fs := flag.NewFlagSet("task init", flag.ContinueOnError)
 	title := fs.String("title", "", "short human title for the task (required)")
 	intent := fs.String("intent", "", "the original intent, in the requester's own words")
+	prd := fs.String("prd", "", "path to a PRD or spec file; its text becomes the task's intent")
 	session := fs.String("session", "", "root session id (defaults to a derived local id)")
 	agentName := fs.String("agent", string(model.AgentHuman), "agent runtime starting the task")
 	if err := fs.Parse(args); err != nil {
@@ -73,6 +77,25 @@ func (a *app) taskInit(ctx context.Context, args []string) error {
 	}
 	if strings.TrimSpace(*title) == "" {
 		return fmt.Errorf("--title is required")
+	}
+
+	// A PRD checked into the repository is the honest source of intent: it is
+	// what the team actually agreed to build, it is reviewable, and it changes
+	// through the same process as the code. Reading it verbatim rather than
+	// summarising it matters — a summary is an interpretation, and intent is
+	// the one field a later worker cannot re-derive (plan §41).
+	if path := strings.TrimSpace(*prd); path != "" {
+		if strings.TrimSpace(*intent) != "" {
+			return fmt.Errorf("pass either --intent or --prd, not both: two sources of intent is one too many")
+		}
+		body, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("reading PRD %s: %w", path, err)
+		}
+		if len(strings.TrimSpace(string(body))) == 0 {
+			return fmt.Errorf("PRD %s is empty; a task with no stated intent cannot be handed to anyone", path)
+		}
+		*intent = string(body)
 	}
 
 	head, err := a.repo.Head(ctx)
@@ -178,13 +201,24 @@ func (a *app) currentState(ctx context.Context, t model.Task) (*model.Engineerin
 		return nil, lineage, nil, err
 	}
 
-	// A task created by ingestion has no typed-in intent, but the transcript may
-	// state one; derivation recovers it. Feed that to the extractor, or a task
-	// whose goal we actually know would still report "no prompt captured" and
-	// extract no requirements from it.
-	prompt := derive.OriginalPrompt(events)
+	// Requirements come from the most authoritative statement of intent
+	// available, in this order:
+	//
+	//  1. What the task was created with — a PRD or spec checked into the
+	//     repository, or an intent the requester typed. This is what the team
+	//     agreed to build, it is reviewable, and it outranks anything said to
+	//     an agent in passing.
+	//  2. The opening prompt of a session, for a task created by ingesting a
+	//     transcript, where nobody stated an intent up front.
+	//  3. An intent a checkpoint recorded, as the last resort.
+	//
+	// The first two were previously the other way round, which meant a task
+	// anchored to a five-requirement PRD had its requirements extracted from
+	// whatever one agent happened to be asked — a narrower and less accurate
+	// source than the document the task was created from.
+	prompt := ref.OriginalIntent
 	if strings.TrimSpace(prompt) == "" {
-		prompt = ref.OriginalIntent
+		prompt = derive.OriginalPrompt(events)
 	}
 	if strings.TrimSpace(prompt) == "" && current != nil {
 		prompt = current.Task.OriginalIntent
@@ -203,6 +237,17 @@ func (a *app) currentState(ctx context.Context, t model.Task) (*model.Engineerin
 	}
 
 	merged := merge.States(stored, current, merge.Options{Clock: a.clock})
+
+	// The intent the task was created with is authoritative and is restored
+	// here. A transcript's checkpoint carries its own one-line intent, and
+	// merging let that short blurb replace a whole PRD — which then silently
+	// dropped the document's requirements and its open questions from every
+	// later derivation. What a team wrote down and reviewed outranks what one
+	// agent summarised for itself (plan §41).
+	if strings.TrimSpace(ref.OriginalIntent) != "" {
+		merged.Task.OriginalIntent = ref.OriginalIntent
+	}
+
 	enforced, findings := validate.Enforce(merged)
 	return enforced, lineage, findings, nil
 }
