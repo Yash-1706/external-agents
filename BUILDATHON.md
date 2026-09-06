@@ -261,6 +261,10 @@ attached — that is the thing being demonstrated, and it works against real Ent
 
 ---
 
+## Demo
+
+A verbatim captured run is in [docs/DEMO.md](docs/DEMO.md) — the fallback demo asset.
+
 ## Setup, run and test instructions
 
 Requires Go 1.26+. No third-party dependencies — standard library only.
