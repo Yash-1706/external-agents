@@ -114,3 +114,66 @@ semantically touched. The 2 dependents are `Stream` and the new test — no unin
 
 Graph results are evidence, not an oracle. Both findings above were verified against source before
 being acted on, and the fix carries a test.
+
+---
+
+## 4. A limitation, found by re-running the same query post-implementation
+
+Re-running `graph impact` on `AgentEvent.Validate` after the curveball work landed — the same
+symbol the §1 decisive finding was about — turned up a gap in Graph's own caller resolution.
+
+```
+$ entire graph impact --symbol AgentEvent.Validate --repo . --format text
+```
+
+```
+Impact: AgentEvent.Validate (.../model/event.go:236) def=236 span=236-256 [method in AgentEvent]
+Blast radius: 1 caller (1 direct, 0 transitive), 2 callees, 1 type consumer, 0 data flows,
+              0 co-change files, 14 siblings.
+
+Callers (1 direct, 0 transitive; who breaks if behavior changes):
+- TestAgentEventValidate (.../model/model_test.go:172) [+2 more call sites]
+```
+
+Graph reports exactly **one caller, a test**. Grepping the source directly turns up production
+callers Graph did not list:
+
+- `.../derive/derive.go:243` — `ev.Validate()` where `ev model.AgentEvent`, inside a `for _, ev :=
+  range in` loop
+- `.../normalize/format.go:355`
+- `.../normalize/normalize.go:234`
+- `.../store/events.go:37`
+
+That is the same shape of caller set the original design analysis in §1/§2 relied on (`normalize`,
+`derive`, `store` — three packages). The live index is under-reporting it as one.
+
+**Working hypothesis, not confirmed:** `Validate` is an overloaded method name — three distinct
+types in this codebase define a method called `Validate` (`AgentEvent`, `Lineage`, and a
+package-private `validate` function in a test fixture). The missed call sites are all on a
+loop-variable value (`ev` from `for _, ev := range in`) rather than a directly-declared-type
+reference, which is exactly the case where a resolver has to disambiguate an overloaded method by
+inferred type instead of by literal declaration. That combination — overload plus loop-variable
+receiver — is the most plausible reason the real callers dropped out of the CALLS edge set. This
+was not root-caused inside Graph itself; it is a source-level observation about which call shapes
+correlate with the miss.
+
+**Why this matters for how we use Graph.** The whole product's evidence rule (`model.ConfidenceFor`)
+says a claim with no evidence can never be better than `UNKNOWN`. The same rule applies to Graph
+output about the repository itself: an impact result is evidence to verify, not a ground truth to
+forward uncritically. Concretely, this means:
+
+- Never present `graph impact` caller counts to a next-worker as a completeness guarantee ("only 1
+  caller" must not be read as "safe to change with no other blast radius") — cross-check with a
+  grep for the symbol name before treating a low caller count as license to skip validation.
+- The §2 impact-analysis-before-a-high-risk-change step should not stop at the tool's caller list
+  when the symbol name is a common one (`Validate`, `Run`, `Handle`, etc.) likely to be overloaded
+  across types — that is precisely the condition under which this gap appeared.
+- This does not retract the §1 finding. The `FormatAuto` closed-set defect was found by a different
+  analysis (const-group exhaustiveness over `DetectFormat`'s switch), not by caller counting, and
+  remains verified against source. The two findings are independent; only the caller-count query
+  is now known to be unreliable for overloaded method names on loop-variable receivers.
+
+No fix is proposed here beyond the workaround above (grep alongside `graph impact` for common
+method names) — this is Graph's own resolver, not this repository's code, so there is nothing in
+this codebase to patch. Recording it is the honest-degradation rule (plan §33/§47) applied to the
+tool itself, not just to transcript capture.
