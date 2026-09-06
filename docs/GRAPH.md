@@ -117,63 +117,69 @@ being acted on, and the fix carries a test.
 
 ---
 
-## 4. A limitation, found by re-running the same query post-implementation
 
-Re-running `graph impact` on `AgentEvent.Validate` after the curveball work landed — the same
-symbol the §1 decisive finding was about — turned up a gap in Graph's own caller resolution.
+## 4. A reproducible Graph limitation: analysis scope across a nested module
+
+Re-running `graph impact` on `AgentEvent.Validate` — the symbol the §1 decision rested on — gives
+**two different answers depending on which directory you point `--repo` at**.
+
+From the repository root:
 
 ```
+$ cd external-agents
 $ entire graph impact --symbol AgentEvent.Validate --repo . --format text
-```
 
-```
-Impact: AgentEvent.Validate (.../model/event.go:236) def=236 span=236-256 [method in AgentEvent]
-Blast radius: 1 caller (1 direct, 0 transitive), 2 callees, 1 type consumer, 0 data flows,
-              0 co-change files, 14 siblings.
-
-Callers (1 direct, 0 transitive; who breaks if behavior changes):
+Impact: AgentEvent.Validate (agents/entire-agent-acmecode/internal/continuity/model/event.go:236)
+Blast radius: 1 caller (1 direct, 0 transitive), ...
+Callers (1 direct, 0 transitive):
 - TestAgentEventValidate (.../model/model_test.go:172) [+2 more call sites]
 ```
 
-Graph reports exactly **one caller, a test**. Grepping the source directly turns up production
-callers Graph did not list:
+From the module root, same symbol, same command:
 
-- `.../derive/derive.go:243` — `ev.Validate()` where `ev model.AgentEvent`, inside a `for _, ev :=
-  range in` loop
-- `.../normalize/format.go:355`
-- `.../normalize/normalize.go:234`
-- `.../store/events.go:37`
+```
+$ cd agents/entire-agent-acmecode
+$ entire graph impact --symbol AgentEvent.Validate --repo . --format text
 
-That is the same shape of caller set the original design analysis in §1/§2 relied on (`normalize`,
-`derive`, `store` — three packages). The live index is under-reporting it as one.
+Impact: AgentEvent.Validate (internal/continuity/model/event.go:236)
+Blast radius: 14 callers (4 direct, 10 transitive), ...
+Callers (4 direct, 10 transitive):
+- selectEvents   (internal/continuity/derive/derive.go:243)
+- finalize       (internal/continuity/normalize/normalize.go:234)
+- FS.AppendEvent (internal/continuity/store/events.go:37)
+- TestAgentEventValidate (internal/continuity/model/model_test.go:172)
+- State, harness.seed, ... [transitive]
+```
 
-**Working hypothesis, not confirmed:** `Validate` is an overloaded method name — three distinct
-types in this codebase define a method called `Validate` (`AgentEvent`, `Lineage`, and a
-package-private `validate` function in a test fixture). The missed call sites are all on a
-loop-variable value (`ev` from `for _, ev := range in`) rather than a directly-declared-type
-reference, which is exactly the case where a resolver has to disambiguate an overloaded method by
-inferred type instead of by literal declaration. That combination — overload plus loop-variable
-receiver — is the most plausible reason the real callers dropped out of the CALLS edge set. This
-was not root-caused inside Graph itself; it is a source-level observation about which call shapes
-correlate with the miss.
+**One caller versus fourteen.** The second answer is the correct one — the four direct callers match
+what `Select-String '\.Validate\(\)'` finds in the source, and they are exactly the three packages
+(`derive`, `normalize`, `store`) the §1 design decision was based on.
 
-**Why this matters for how we use Graph.** The whole product's evidence rule (`model.ConfidenceFor`)
-says a claim with no evidence can never be better than `UNKNOWN`. The same rule applies to Graph
-output about the repository itself: an impact result is evidence to verify, not a ground truth to
-forward uncritically. Concretely, this means:
+`external-agents` is a repository of *independent Go modules*: each `agents/entire-agent-*/`
+carries its own `go.mod`. Indexed from the repository root, call edges inside a nested module do
+not resolve, and the blast radius collapses to whatever the root-level index can see. Both runs
+above report `cache-miss` and rebuild, so this is not a stale cache — it reproduces.
 
-- Never present `graph impact` caller counts to a next-worker as a completeness guarantee ("only 1
-  caller" must not be read as "safe to change with no other blast radius") — cross-check with a
-  grep for the symbol name before treating a low caller count as license to skip validation.
-- The §2 impact-analysis-before-a-high-risk-change step should not stop at the tool's caller list
-  when the symbol name is a common one (`Validate`, `Run`, `Handle`, etc.) likely to be overloaded
-  across types — that is precisely the condition under which this gap appeared.
-- This does not retract the §1 finding. The `FormatAuto` closed-set defect was found by a different
-  analysis (const-group exhaustiveness over `DetectFormat`'s switch), not by caller counting, and
-  remains verified against source. The two findings are independent; only the caller-count query
-  is now known to be unreliable for overloaded method names on loop-variable receivers.
+An earlier revision of this document attributed the miss to overloaded method names and
+loop-variable receivers. **That hypothesis was wrong**, and it is corrected here rather than
+quietly deleted: the deciding variable is the `--repo` root, not the call shape. It was found by
+re-running the command from a different working directory while preparing a demo.
 
-No fix is proposed here beyond the workaround above (grep alongside `graph impact` for common
-method names) — this is Graph's own resolver, not this repository's code, so there is nothing in
-this codebase to patch. Recording it is the honest-degradation rule (plan §33/§47) applied to the
-tool itself, not just to transcript capture.
+### What to do about it
+
+- **Point `--repo` at the module root**, not the repository root, in a multi-module repo.
+- **Never read a low caller count as "safe to change."** `1 caller` here did not mean one caller;
+  it meant the analysis could not see the rest.
+- Cross-check any impact result that will gate a decision against a plain source search.
+
+### Why this belongs in the submission
+
+The product's own rule is that a claim can never outrank its evidence, and that historical context
+must be verified before it is relied on. That rule applies to Graph output about this repository,
+and it applies to *this document*: a finding recorded four hours ago turned out to be wrong the
+moment it was re-run under different conditions.
+
+That is precisely the failure mode the continuity layer exists to catch — which is why
+`graph.Verification` carries `Available` and `Resolved` as separate fields, and why every next
+action renders `graph verified: no — blast radius is unconfirmed` when Graph did not run. "We did
+not look" and "there is nothing there" must never be the same answer.
